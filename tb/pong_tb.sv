@@ -17,17 +17,23 @@ bit hPulse, vPulse;
 
 initial begin
     clk = 0;
-    en  = 0;
-    rst = 1;
-    #10us;
-    rst = 0;
-    en = 1;
+    reset();
+    run();
 end
 
 always begin
-    #5us;
+    #5;
     clk = ~clk;
 end
+
+task reset();
+  #5  rst = 1;
+  #10 rst = 0;
+endtask
+
+task run();
+  #5 en <= 1;
+endtask
 
 vga_counter VGA_INST(
     .clkIn(clk),

@@ -100,15 +100,15 @@ begin
 
   -- convertToCartesian : make the xValue and yValue easier to work with by other programs.
   -- In visible horizontal area?
-  hVisible_s <= '1' when ((hsyncCnt_s > HSync_Front) and (hsyncCnt_s > HSync_Front + HSync_Visible)) else '0';
+  hVisible_s <= '1' when ((hsyncCnt_s > HSync_Front) and (hsyncCnt_s < HSync_Front + HSync_Visible)) else '0';
   -- In visible vertical area?
-  vVisible_s <= '1' when ((vsyncCnt_s > VSync_Front) and (vsyncCnt_s > VSync_Front + VSync_Visible)) else '0';
+  vVisible_s <= '1' when ((vsyncCnt_s > VSync_Front) and (vsyncCnt_s < VSync_Front + VSync_Visible)) else '0';
   -- inVisibleArea?
   inVisibleArea_s <= '1' when ((hVisible_s = '1') and (vVisible_s = '1')) else '0';
 
   -- remove the front door from the count, so the coordinate starts at (0, 0).
-  xValue <= hsyncCnt_s - HSync_Front when inVisibleArea_s = '1' else 0;
-  yValue <= vsyncCnt_s - VSync_Front when inVisibleArea_s = '1' else 0;
+  xValue <= hsyncCnt_s - HSync_Front - 1 when inVisibleArea_s = '1' else 0;
+  yValue <= vsyncCnt_s - VSync_Front - 1 when inVisibleArea_s = '1' else 0;
 
   inVisibleArea <= inVisibleArea_s;
 end architecture RTL;
