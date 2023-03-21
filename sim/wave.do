@@ -1,0 +1,11 @@
+add wave pong_tb/clk
+add wave pong_tb/rst 
+add wave pong_tb/en 
+add wave pong_tb/isVisible 
+add wave pong_tb/x 
+add wave pong_tb/y 
+add wave pong_tb/hPulse 
+add wave pong_tb/vPulse
+add wave pong_tb/red
+add wave pong_tb/green
+add wave pong_tb/blue

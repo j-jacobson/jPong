@@ -1,20 +1,31 @@
-#-------------------------------------------------
-#-- filename : Makefile
-#-- date     : 19 Mar 2023
-#-- Author   : Jonathan L. Jacobson
-#-- Email    : jacobson.jonathan.1@gmail.com
-#--
-#-- Makefile for Pong implementation
-#-- of a counter.
-#--
-#-------------------------------------------------
+##################################################
+# Filename     : Makefile
+# Date         : 19 Mar 2023
+# Author       : Jonathan L. Jacobson
+# Email        : jacobson.jonathan.1@gmail.com
+#
+# Makefile for Pong implementation.
+#
+#
+##################################################
 
-compile: src/vga_counter.vhd jacobson_ip/ip_counter.vhd tb/pong_tb.sv
-	vcom jacobson_ip/ip_counter.vhd src/vga_counter.vhd
+compile_ip: jacobson_ip/*
+	vcom jacobson_ip/ip_counter.vhd \
+	     jacobson_ip/vga_counter.vhd
+
+compile_tb: tb/*
 	vlog tb/pong_tb.sv
 
+compile_design: src/*
+	vcom src/vga_driver.vhd
+
+compile:
+	make compile_ip
+	make compile_design
+	make compile_tb
+
 sim: FORCE
-	vsim pong_tb
+	vsim pong_tb -do "sim/wave.do; run 200000"
 
 all:
 	make compile
