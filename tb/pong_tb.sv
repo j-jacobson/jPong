@@ -7,7 +7,6 @@
 // exercise the Pong game.
 //
 // ----------------------------------------------
-
 module pong_tb;
 
 bit clk, vga_clk, rst, en;
@@ -38,7 +37,7 @@ task run();
   #80ns en <= 1;
 endtask
 
-pong_top pong_inst (
+pong_top pong_inst(
   .clk(clk),
   .vgaClk(vga_clk),
   .rst(rst),

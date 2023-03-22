@@ -8,15 +8,14 @@
 -- of Pong on the Nexys A7 development board.
 --
 -- Components: VGA Driver
---             Game Logic
---             Controller Driver
---             Sound Driver
+--             
+--             
+--             
 -------------------------------------------------
-
-library ieee;
-  use ieee.std_logic_1164.all;
-  use ieee.std_logic_arith.all;
-  use ieee.std_logic_unsigned.all;
+library ieee;         use ieee.std_logic_1164.all;
+                      use ieee.std_logic_unsigned.all;
+                      use ieee.numeric_std.all;
+library pong_lib;
 
 entity pong_top is
   port (
@@ -38,7 +37,7 @@ architecture RTL of pong_top is
 
 begin
 
-  vga_inst : entity work.vga_driver(RTL)
+  vga_inst : entity pong_lib.vga_driver(RTL)
   generic map (
     HSync_Front   => 16,
     HSync_Visible => 640,
