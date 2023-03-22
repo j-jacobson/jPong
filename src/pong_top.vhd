@@ -20,38 +20,52 @@ library ieee;
 
 entity pong_top is
   port (
-    clk           : in   std_logic;
-    rst           : in   std_logic
+    clk           : in    std_logic;
+    vgaClk        : in    std_logic;
+    rst           : in    std_logic;
+    enable        : in    std_logic;
+
+    RED           :   out std_logic_vector(7 downto 0);
+    GREEN         :   out std_logic_vector(7 downto 0);
+    BLUE          :   out std_logic_vector(7 downto 0);
+
+    HSync         :   out std_logic;
+    VSync         :   out std_logic
   );
 end;
 
 architecture RTL of pong_top is
-  -- add signals here
-  signal temp_signal      : bit;
 
 begin
 
-  vga_inst : entity vga_driver
-    port map (
-        clkIn => clk,
-        rstIn => rst
-    );
+  vga_inst : entity work.vga_driver(RTL)
+  generic map (
+    HSync_Front   => 16,
+    HSync_Visible => 640,
+    HSync_Back    => 48,
+    HSync_SyncP   => 96,
 
-  sound_inst : entity sound_driver
-    port map (
-        clkIn => clk,
-        rstIn => rst
-    );
+    VSync_Front   => 10,
+    VSync_Visible => 480,
+    VSync_Back    => 33,
+    VSync_SyncP   => 2
+  )
+  port map (
+    clkIn         => vgaClk,
+    rstIn         => rst,
+    enableIn      => enable,
 
-  game_inst : entity pong_logic
-    port map (
-        clkIn => clk,
-        rstIn => rst
-    );
+    RED           => RED,
+    GREEN         => GREEN,
+    BLUE          => BLUE,
 
-  controller_inst : entity controller_inst
-    port map (
-        clkIn => clk,
-        rstIn => rst
-    );
+    RED_RTN       => '0',
+    GREEN_RTN     => '0',
+    BLUE_RTN      => '0',
+
+    ID            => (others => '0'),
+    HSync         => HSync,
+    VSync         => VSync
+  );
+
 end architecture RTL;
