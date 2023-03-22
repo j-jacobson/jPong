@@ -17,7 +17,8 @@ compile_tb: tb/*
 	vlog tb/pong_tb.sv
 
 compile_design: src/*
-	vcom src/vga_driver.vhd
+	vcom src/vga_driver.vhd \
+	     src/pong_top.vhd
 
 compile:
 	make compile_ip
@@ -25,7 +26,7 @@ compile:
 	make compile_tb
 
 sim: FORCE
-	vsim pong_tb -do "sim/wave.do; run 200000"
+	vsim pong_tb -do "do sim/wave.do; run 500us"
 
 all:
 	make compile

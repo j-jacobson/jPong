@@ -51,7 +51,7 @@ architecture RTL of vga_driver is
 signal inVisibleArea : std_logic;
 signal xValue        : std_logic_vector(31 downto 0); -- horizontal position
 signal yValue        : std_logic_vector(31 downto 0); -- veritical position
-signal pixel_s       : std_logic_vector(2 downto 0); -- probably way wrong
+signal pixel_s       : std_logic_vector(2 downto 0);
 
 begin
 
@@ -83,5 +83,5 @@ begin
   RED   <= (others => '1') when pixel_s(0) = '1' else (others => '0');
   GREEN <= (others => '1') when pixel_s(1) = '1' else (others => '0');
   BLUE  <= (others => '1') when pixel_s(2) = '1' else (others => '0');
-  
+
 end architecture RTL;
