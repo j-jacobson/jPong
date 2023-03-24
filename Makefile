@@ -6,20 +6,21 @@
 #
 # Makefile for Pong implementation.
 #
-#
 ##################################################
 
+LIB_NAME = pong_lib
+LIB_DIR  = ./lib
+TB_NAME  = pong_tb
+
 compile_ip: jacobson_ip/*
-	vcom -work lib/jacobson_ip \
-	     jacobson_ip/ip_counter.vhd \
-	     jacobson_ip/vga_counter.vhd
+	cd jacobson_ip && make compile
 
 compile_tb: tb/*
-	vlog -work lib/pong_lib \
+	vlog -work lib/$(LIB_NAME) \
 	     tb/pong_tb.sv
 
 compile_design: src/*
-	vcom -work lib/pong_lib \
+	vcom -work lib/$(LIB_NAME) \
 	     src/vga_driver.vhd \
 	     src/pong_top.vhd
 
@@ -29,10 +30,22 @@ compile:
 	make compile_tb
 
 sim: FORCE
-	vsim pong_lib.pong_tb -do "do sim/wave.do; run 500us"
+	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 500us"
 
 all:
 	make compile
 	make sim
+
+new:
+	mkdir -p docs tb src sim lib
+	test -f .gitignore || echo lib/* > .gitignore
+    git submodule add https://github.com/j-jacobson/jacobson_ip.git
+
+# Delete the library using vdel
+clean:
+	cd jacobson_ip && \
+	make clean
+	cd $(LIB_DIR) && \
+	vdel -all -lib $(LIB_NAME)
 
 FORCE: ;

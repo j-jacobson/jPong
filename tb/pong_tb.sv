@@ -11,7 +11,7 @@ module pong_tb;
 
 bit clk, vga_clk, rst, en;
 bit hPulse, vPulse;
-bit [7:0] red, green, blue;
+bit [3:0] red, green, blue;
 
 initial begin
   clk = 0;
