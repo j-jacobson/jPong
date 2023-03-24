@@ -18,15 +18,18 @@ library ieee;         use ieee.std_logic_1164.all;
 library pong_lib;
 
 entity pong_top is
+  generic (
+    VGA_DEPTH     : integer := 12
+  );
   port (
     clk           : in    std_logic;
     vgaClk        : in    std_logic;
     rst           : in    std_logic;
     enable        : in    std_logic;
 
-    RED           :   out std_logic_vector(7 downto 0);
-    GREEN         :   out std_logic_vector(7 downto 0);
-    BLUE          :   out std_logic_vector(7 downto 0);
+    RED           :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
+    GREEN         :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
+    BLUE          :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
 
     HSync         :   out std_logic;
     VSync         :   out std_logic
@@ -39,6 +42,7 @@ begin
 
   vga_inst : entity pong_lib.vga_driver(RTL)
   generic map (
+    VGA_DEPTH     => VGA_DEPTH,
     HSync_Front   => 16,
     HSync_Visible => 640,
     HSync_Back    => 48,

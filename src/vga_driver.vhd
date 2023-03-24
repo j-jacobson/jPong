@@ -18,6 +18,7 @@ library jacobson_ip;
 
 entity vga_driver is
   generic(
+    VGA_DEPTH     : integer := 12;
     HSync_Front   : integer := 16;
     HSync_Visible : integer := 640;
     HSync_Back    : integer := 48;
@@ -33,9 +34,9 @@ entity vga_driver is
     rstIn         : in    std_logic;
     enableIn      : in    std_logic;
 
-    RED           :   out std_logic_vector(7 downto 0);
-    GREEN         :   out std_logic_vector(7 downto 0);
-    BLUE          :   out std_logic_vector(7 downto 0);
+    RED           :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
+    GREEN         :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
+    BLUE          :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
 
     RED_RTN       : in    std_logic;
     GREEN_RTN     : in    std_logic;
