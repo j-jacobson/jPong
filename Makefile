@@ -12,7 +12,7 @@ LIB_NAME = pong_lib
 LIB_DIR  = ./lib
 TB_NAME  = pong_tb
 
-compile_ip: jacobson_ip/*
+compile_ip:
 	cd jacobson_ip && make compile
 
 compile_tb: tb/*
@@ -39,7 +39,6 @@ all:
 new:
 	mkdir -p docs tb src sim lib
 	test -f .gitignore || echo lib/* > .gitignore
-    git submodule add https://github.com/j-jacobson/jacobson_ip.git
 
 # Delete the library using vdel
 clean:
