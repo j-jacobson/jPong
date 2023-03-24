@@ -1,5 +1,7 @@
-add wave pong_tb/clk
-add wave pong_tb/vga_clk
+add wave pong_tb/clk100
+add wave pong_tb/clk25
+add wave pong_tb/pong_inst/clk25MHz
+add wave pong_tb/led
 add wave pong_tb/rst 
 add wave pong_tb/en 
 add wave pong_tb/hPulse 
@@ -9,3 +11,5 @@ add wave pong_tb/green
 add wave pong_tb/blue
 add wave pong_tb/pong_inst/vga_inst/vga_counter_inst/hsync_counter_inst/countOut
 add wave pong_tb/pong_inst/vga_inst/vga_counter_inst/vsync_counter_inst/countOut
+add wave pong_tb/pong_inst/vga_clk_inst/clk_div_inst/countOut
+add wave pong_tb/pong_inst/vga_clk_inst/clk_div_inst/doneOut
