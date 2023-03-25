@@ -12,7 +12,7 @@ LIB_NAME = pong_lib
 LIB_DIR  = ./lib
 TB_NAME  = pong_tb
 
-compile_ip: jacobson_ip/*
+compile_ip:
 	cd jacobson_ip && make compile
 
 compile_tb: tb/*
@@ -21,7 +21,6 @@ compile_tb: tb/*
 
 compile_design: src/*
 	vcom -work lib/$(LIB_NAME) \
-	     src/vga_driver.vhd \
 	     src/pong_top.vhd
 
 compile:
@@ -30,7 +29,14 @@ compile:
 	make compile_tb
 
 sim: FORCE
-	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 500us"
+	cd sim && \
+	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 10000us"
+
+build: FORCE
+	vivado -mode batch -source build/tcl/build.tcl -nolog -nojournal
+
+program: FORCE
+	vivado -mode batch -source build/tcl/program.tcl -nolog -nojournal
 
 all:
 	make compile
@@ -39,7 +45,6 @@ all:
 new:
 	mkdir -p docs tb src sim lib
 	test -f .gitignore || echo lib/* > .gitignore
-    git submodule add https://github.com/j-jacobson/jacobson_ip.git
 
 # Delete the library using vdel
 clean:

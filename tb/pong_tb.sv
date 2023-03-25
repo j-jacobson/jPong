@@ -9,28 +9,30 @@
 // ----------------------------------------------
 module pong_tb;
 
-bit clk, vga_clk, rst, en;
+bit clk100, clk25;
+bit rst, en;
 bit hPulse, vPulse;
 bit [3:0] red, green, blue;
+bit led;
 
 initial begin
-  clk = 0;
-  vga_clk = 0;
-  reset();
+  clk100 = 0;
+  clk25  = 0;
   run();
+  reset();
 end
 
 always begin
-  #5ns clk = ~clk;
+  #5ns clk100 = ~clk100;
 end
 
 always begin
-  #19.8609ns vga_clk = ~vga_clk;
+  #20ns clk25 = ~clk25;
 end
 
 task reset();
-  #5ns  rst = 1;
-  #50ns rst = 0;
+  #5ns   rst = 1;
+  #200ns rst = 0;
 endtask
 
 task run();
@@ -38,15 +40,15 @@ task run();
 endtask
 
 pong_top pong_inst(
-  .clk(clk),
-  .vgaClk(vga_clk),
-  .rst(rst),
+  .CLK100MHZ(clk100),
+  .reset(rst),
   .enable(en),
-  .RED(red),
-  .GREEN(green),
-  .BLUE(blue),
-  .HSync(hPulse),
-  .VSync(vPulse)
+  .VGA_R(red),
+  .VGA_G(green),
+  .VGA_B(blue),
+  .VGA_HS(hPulse),
+  .VGA_VS(vPulse),
+  .LED(led)
 );
 
 endmodule

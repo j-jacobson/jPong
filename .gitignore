@@ -2,3 +2,12 @@ transcript
 *.wlf
 work/*
 lib/*
+# Vivado spam files
+*.jou
+*.log
+*.str
+# Vivado project files and folders (We want to keep constraint files)
+build/*.*
+# In future, make project within a subfolder called 'vivado'
+# build/vivado
+src/no_compile
