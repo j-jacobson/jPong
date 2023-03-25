@@ -29,7 +29,14 @@ compile:
 	make compile_tb
 
 sim: FORCE
+	cd sim && \
 	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 10000us"
+
+build: FORCE
+	vivado -mode batch -source build/tcl/build.tcl -nolog -nojournal
+
+program: FORCE
+	vivado -mode batch -source build/tcl/program.tcl -nolog -nojournal
 
 all:
 	make compile
