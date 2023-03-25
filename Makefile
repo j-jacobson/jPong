@@ -30,7 +30,7 @@ compile:
 	make compile_tb
 
 sim: FORCE
-	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 1000us"
+	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 10000us"
 
 all:
 	make compile

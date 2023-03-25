@@ -41,7 +41,7 @@ end;
 
 architecture RTL of pong_top is
 
-signal clk25MHz   : std_logic;
+signal clk25MHz     : std_logic;
 
 begin
 
