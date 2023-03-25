@@ -21,7 +21,6 @@ compile_tb: tb/*
 
 compile_design: src/*
 	vcom -work lib/$(LIB_NAME) \
-	     src/vga_driver.vhd \
 	     src/pong_top.vhd
 
 compile:

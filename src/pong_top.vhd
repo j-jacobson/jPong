@@ -55,7 +55,7 @@ begin
     clkOut        => clk25MHz
   );
 
-  vga_inst : entity pong_lib.vga_driver(RTL)
+  vga_inst : entity jacobson_ip.vga_driver(RTL)
   generic map (
     VGA_DEPTH     => VGA_DEPTH,
     HSync_Front   => 16,
