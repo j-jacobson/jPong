@@ -18,10 +18,28 @@ library ieee;         use ieee.std_logic_1164.all;
 
 package pong_pack is
 
-  subtype coord_t       is std_logic_vector(31 downto 0); -- leave coordinate depth open
+  constant COORD_LEN  : integer := 32;
+  constant XSMALL     : integer := 30;
+  constant SMALL      : integer := 50;
+  constant NORMAL     : integer := 80;
+  constant LARGE      : integer := 150;
+  constant FULL       : integer := 480;
+
+  subtype coord_t       is std_logic_vector(COORD_LEN-1 downto 0); -- leave coordinate depth open
   -- array of coords
   type    coords_t      is array (natural range <>) of coord_t;
   -- array of arrays of coords, for the 2 bumpers and the 7 segment displays
   type    multiCoords_t is array (natural range <>) of coords_t(0 to 3);
+  -- int to SLV function
+  function toSLV(int: integer) return std_logic_vector;
 
 end package;
+
+package body pong_pack is
+
+  function toSLV(int: integer) return std_logic_vector is
+  begin
+    return std_logic_vector(to_unsigned(int,  COORD_LEN));
+  end function;
+
+end package body pong_pack;

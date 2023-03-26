@@ -113,7 +113,8 @@ begin
 
   logic_inst : entity pong_lib.pong_logic(RTL)
     generic map(
-    --PADDLE_SIZE     => NORMAL; -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    -- PADDLEL_SIZE    => NORMAL; -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    -- PADDLER_SIZE    => NORMAL; -- XSMALL, SMALL, NORMAL, LARGE, FULL
     hVisibleArea    => 640,
     vVisibleArea    => 480
     )
@@ -125,7 +126,10 @@ begin
       bumperCoords  => bumperCoords_s,
       midlineCoords => midlineCoords_s,
       numCoords     => numCoords_s,
-      ballCoords    => ballCoords_s
+      ballCoords    => ballCoords_s,
+
+      scoreL        => open,
+      scoreR        => open
     );
 
   test_led_inst : entity jacobson_ip.clk_divider(RTL)
