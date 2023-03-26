@@ -21,7 +21,9 @@ compile_tb: tb/*
 
 compile_design: src/*
 	vcom -work lib/$(LIB_NAME) \
-	     src/pong_top.vhd
+	    src/pong_pack.vhd \
+			src/pong_graphics.vhd \
+	    src/pong_top.vhd
 
 compile:
 	make compile_ip
@@ -29,7 +31,6 @@ compile:
 	make compile_tb
 
 sim: FORCE
-	cd sim && \
 	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 10000us"
 
 build: FORCE

@@ -8,14 +8,14 @@
 -- of Pong on the Nexys A7 development board.
 --
 -- Components: VGA Driver
---             
---             
---             
+--             Pong Game Logic
+--             Pong Graphics Logic
+--             Test LED counter (2Hz Blink on LED[0])
 -------------------------------------------------
 library ieee;         use ieee.std_logic_1164.all;
                       use ieee.std_logic_unsigned.all;
                       use ieee.numeric_std.all;
-library pong_lib;
+library pong_lib;     use pong_lib.pong_pack.all;
 library jacobson_ip;
 
 entity pong_top is
@@ -41,58 +41,80 @@ end;
 
 architecture RTL of pong_top is
 
-signal clk25MHz     : std_logic;
+signal clk25MHz      : std_logic;
+signal inVisibleArea : std_logic;
+signal xCoord        : coord_t;
+signal yCoord        : coord_t;
 
 begin
 
   vga_clk_inst : entity jacobson_ip.clk_divider(RTL)
-  generic map (
-    COUNT         => 2 -- 100MHz -> 25MHz
-  )
-  port map (
-    clkIn         => CLK100MHZ,
-    rstIn         => reset,
-    clkOut        => clk25MHz
-  );
+    generic map (
+      COUNT         => 2 -- 100MHz -> 25MHz
+    )
+    port map (
+      clkIn         => CLK100MHZ,
+      rstIn         => reset,
+      clkOut        => clk25MHz
+    );
 
   vga_inst : entity jacobson_ip.vga_driver(RTL)
-  generic map (
-    VGA_DEPTH     => VGA_DEPTH,
-    HSync_Front   => 16,
-    HSync_Visible => 640,
-    HSync_Back    => 48,
-    HSync_SyncP   => 96,
+    generic map (
+      VGA_DEPTH     => VGA_DEPTH,
+      HSync_Front   => 16,
+      HSync_Visible => 640,
+      HSync_Back    => 48,
+      HSync_SyncP   => 96,
 
-    VSync_Front   => 10,
-    VSync_Visible => 480,
-    VSync_Back    => 33,
-    VSync_SyncP   => 2
-  )
-  port map (
-    clkIn         => clk25MHz,
-    rstIn         => reset,
-    enableIn      => enable,
+      VSync_Front   => 10,
+      VSync_Visible => 480,
+      VSync_Back    => 33,
+      VSync_SyncP   => 2
+    )
+    port map (
+      clkIn         => clk25MHz,
+      rstIn         => reset,
+      enableIn      => enable,
 
-    RED           => VGA_R,
-    GREEN         => VGA_G,
-    BLUE          => VGA_B,
+      inVisibleArea => inVisibleArea,
+      xCoord        => xCoord,
+      yCoord        => yCoord,
 
-    RED_RTN       => '0',
-    GREEN_RTN     => '0',
-    BLUE_RTN      => '0',
+      HSync         => VGA_HS,
+      VSync         => VGA_VS
+    );
 
-    ID            => (others => '0'),
-    HSync         => VGA_HS,
-    VSync         => VGA_VS
-  );
+  graphics_inst : entity pong_lib.pong_graphics(RTL)
+    generic map (
+      VGA_DEPTH     => VGA_DEPTH
+    )
+    port map (
+      clk           => clk25MHz,
+      rst           => reset,
+      en            => inVisibleArea,
+
+      xCoord        => xCoord,
+      yCoord        => yCoord,
+
+      -- game logic will take care of these
+      bumperCoords  => (others => (others => (others => '0'))),
+      midlineCoords => (others => (others => ('0'))),
+      numCoords     => (others => (others => (others => '0'))),
+      ballCoords    => (others => (others => ('0'))),
+
+      RED           => VGA_R,
+      GREEN         => VGA_G,
+      BLUE          => VGA_B
+    );
 
   test_led_inst : entity jacobson_ip.clk_divider(RTL)
-  generic map (
-    COUNT         => 50000000 -- 100MHz -> 2Hz
-  )
-  port map (
-    clkIn         => CLK100MHZ,
-    rstIn         => reset,
-    clkOut        => LED(0)
-  );
+    generic map (
+      COUNT         => 50000000 -- 100MHz -> 2Hz
+    )
+    port map (
+      clkIn         => CLK100MHZ,
+      rstIn         => reset,
+      clkOut        => LED(0)
+    );
+
 end architecture RTL;

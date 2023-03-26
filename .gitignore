@@ -7,7 +7,6 @@ lib/*
 *.log
 *.str
 # Vivado project files and folders (We want to keep constraint files)
-build/*.*
-# In future, make project within a subfolder called 'vivado'
-# build/vivado
+build/pong.*
+# No compile files (might want to ver control these in the future, but not now)
 src/no_compile
