@@ -21,7 +21,10 @@ compile_tb: tb/*
 
 compile_design: src/*
 	vcom -work lib/$(LIB_NAME) \
-	     src/pong_top.vhd
+	    src/pong_pack.vhd \
+			src/pong_graphics.vhd \
+			src/pong_logic.vhd \
+	    src/pong_top.vhd
 
 compile:
 	make compile_ip
@@ -29,8 +32,8 @@ compile:
 	make compile_tb
 
 sim: FORCE
-	cd sim && \
-	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 10000us"
+	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 10000us" && \
+	mv transcript vsim.wlf sim/
 
 build: FORCE
 	vivado -mode batch -source build/tcl/build.tcl -nolog -nojournal
