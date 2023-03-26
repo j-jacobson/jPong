@@ -41,10 +41,14 @@ end;
 
 architecture RTL of pong_top is
 
-signal clk25MHz      : std_logic;
-signal inVisibleArea : std_logic;
-signal xCoord        : coord_t;
-signal yCoord        : coord_t;
+signal clk25MHz        : std_logic;
+signal inVisibleArea   : std_logic;
+signal xCoord          : coord_t;
+signal yCoord          : coord_t;
+signal bumperCoords_s  : multiCoords_t(0 to 1);
+signal midlineCoords_s : coords_t(0 to 3);
+signal numCoords_s     : multiCoords_t(0 to 13);
+signal ballCoords_s    : coords_t(0 to 3);
 
 begin
 
@@ -97,14 +101,31 @@ begin
       yCoord        => yCoord,
 
       -- game logic will take care of these
-      bumperCoords  => (others => (others => (others => '0'))),
-      midlineCoords => (others => (others => ('0'))),
-      numCoords     => (others => (others => (others => '0'))),
-      ballCoords    => (others => (others => ('0'))),
+      bumperCoords  => bumperCoords_s,
+      midlineCoords => midlineCoords_s,
+      numCoords     => numCoords_s,
+      ballCoords    => ballCoords_s,
 
       RED           => VGA_R,
       GREEN         => VGA_G,
       BLUE          => VGA_B
+    );
+
+  logic_inst : entity pong_lib.pong_logic(RTL)
+    generic map(
+    --PADDLE_SIZE     => NORMAL; -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    hVisibleArea    => 640,
+    vVisibleArea    => 480
+    )
+    port map(
+      clk           => clk25MHz,
+      rst           => reset,
+      en            => '1',
+
+      bumperCoords  => bumperCoords_s,
+      midlineCoords => midlineCoords_s,
+      numCoords     => numCoords_s,
+      ballCoords    => ballCoords_s
     );
 
   test_led_inst : entity jacobson_ip.clk_divider(RTL)
