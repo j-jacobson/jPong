@@ -1,1 +1,2 @@
-build/* linguist-vendored
+build/tcl/* linguist-vendored
+build/constraints/* linguist-vendored

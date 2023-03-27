@@ -25,8 +25,13 @@ entity pong_top is
   );
   port (
     CLK100MHZ     : in    std_logic;
-    reset         : in    std_logic;
+    reset_n       : in    std_logic;
     enable        : in    std_logic;
+
+    BTNU          : in    std_logic;
+    BTND          : in    std_logic;
+    BTNL          : in    std_logic;
+    BTNR          : in    std_logic;
 
     VGA_R         :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
     VGA_G         :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
@@ -42,15 +47,24 @@ end;
 architecture RTL of pong_top is
 
 signal clk25MHz        : std_logic;
+signal reset           : std_logic;
 signal inVisibleArea   : std_logic;
 signal xCoord          : coord_t;
 signal yCoord          : coord_t;
-signal bumperCoords_s  : multiCoords_t(0 to 1);
+signal bumperLCoords_s : coords_t(0 to 3);
+signal bumperRCoords_s : coords_t(0 to 3);
 signal midlineCoords_s : coords_t(0 to 3);
-signal numCoords_s     : multiCoords_t(0 to 13);
+signal numLCoords_s    : multiCoords_t(0 to 6);
+signal numRCoords_s    : multiCoords_t(0 to 6);
 signal ballCoords_s    : coords_t(0 to 3);
+signal controlLIn      : std_logic_vector(0 to 3);
+signal controlRIn      : std_logic_vector(0 to 3);
 
 begin
+
+  reset      <= not reset_n;
+  controlLIn <= BTNU & BTND & BTNL & BTNR;
+  controlRIn <= (others => '0');
 
   vga_clk_inst : entity jacobson_ip.clk_divider(RTL)
     generic map (
@@ -101,10 +115,12 @@ begin
       yCoord        => yCoord,
 
       -- game logic will take care of these
-      bumperCoords  => bumperCoords_s,
-      midlineCoords => midlineCoords_s,
-      numCoords     => numCoords_s,
-      ballCoords    => ballCoords_s,
+      bumperLCoords  => bumperLCoords_s,
+      bumperRCoords  => bumperRCoords_s,
+      midlineCoords  => midlineCoords_s,
+      numLCoords     => numLCoords_s,
+      numRCoords     => numRCoords_s,
+      ballCoords     => ballCoords_s,
 
       RED           => VGA_R,
       GREEN         => VGA_G,
@@ -113,19 +129,30 @@ begin
 
   logic_inst : entity pong_lib.pong_logic(RTL)
     generic map(
-    --PADDLE_SIZE     => NORMAL; -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    PADDLEL_SIZE    => NORMAL, -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    PADDLER_SIZE    => FULL,   -- XSMALL, SMALL, NORMAL, LARGE, FULL
     hVisibleArea    => 640,
-    vVisibleArea    => 480
+    vVisibleArea    => 480,
+    BUMPER_SPEED    => 100000,
+    BALL_SPEED      =>  90000
     )
     port map(
       clk           => clk25MHz,
       rst           => reset,
       en            => '1',
 
-      bumperCoords  => bumperCoords_s,
-      midlineCoords => midlineCoords_s,
-      numCoords     => numCoords_s,
-      ballCoords    => ballCoords_s
+      controlLIn    => controlLIn,
+      controlRIn    => controlRIn,
+
+      bumperLCoords  => bumperLCoords_s,
+      bumperRCoords  => bumperRCoords_s,
+      midlineCoords  => midlineCoords_s,
+      numLCoords     => numLCoords_s,
+      numRCoords     => numRCoords_s,
+      ballCoords     => ballCoords_s,
+
+      scoreL        => open,
+      scoreR        => open
     );
 
   test_led_inst : entity jacobson_ip.clk_divider(RTL)
