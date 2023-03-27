@@ -28,6 +28,7 @@ entity pong_top is
     reset_n       : in    std_logic;
     enable        : in    std_logic;
 
+    BTNC          : in    std_logic;
     BTNU          : in    std_logic;
     BTND          : in    std_logic;
     BTNL          : in    std_logic;
@@ -141,8 +142,12 @@ begin
       rst           => reset,
       en            => '1',
 
+      startIn       => BTNC,
       controlLIn    => controlLIn,
       controlRIn    => controlRIn,
+
+      xCoord        => xCoord,
+      yCoord        => yCoord,
 
       bumperLCoords  => bumperLCoords_s,
       bumperRCoords  => bumperRCoords_s,
