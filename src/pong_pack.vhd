@@ -37,9 +37,14 @@ package pong_pack is
   -- function to see if a pixel is within a range (x0, x1, y0, y1)
   function inCoords(x, y: coord_t;  coords : coords_t(0 to 3)) return boolean;
   -- function to shift coords of an object
-  function shiftCoords(direction: std_logic_vector(3 downto 0); coords : coords_t(0 to 3)) return coords_t;
+  function shiftCoords(direction: std_logic_vector(0 to 3); coords : coords_t(0 to 3)) return coords_t;
   -- function to turn an integer into a picture of pixels
   function intToPixels(int: integer; bounds: coords_t(0 to 3)) return multiCoords_t;
+  -- Overload + operator to increment and decrement the coords.
+  function "+" (L: coords_t(0 to 3); R: std_logic_vector(0 to 3)) return coords_t;
+  function "+" (L, R: coords_t(0 to 3)) return coords_t;
+  -- Return true if two objects are touching.
+  function isTouching (L, R: coords_t(0 to 3)) return boolean;
 end package;
 
 package body pong_pack is
@@ -64,7 +69,7 @@ package body pong_pack is
     return isIn;
   end function;
 
-  function shiftCoords(direction: std_logic_vector(3 downto 0);
+  function shiftCoords(direction: std_logic_vector(0 to 3);
                        coords   : coords_t(0 to 3)
                       )return coords_t is
   variable shifted : coords_t(0 to 3) := coords;
@@ -135,6 +140,60 @@ package body pong_pack is
     end if;
 
     return pixelsOut;
+  end function;
+
+  function "+" (L: coords_t(0 to 3); R: std_logic_vector(0 to 3)) return coords_t is
+    variable Rtemp  : coords_t(0 to 3);
+    variable slvOut : coords_t(0 to 3);
+  begin
+    Rtemp(0) := (others => R(0));
+    Rtemp(1) := (others => R(1));
+    Rtemp(2) := (others => R(2));
+    Rtemp(3) := (others => R(3));
+
+    slvOut := L + Rtemp;
+    return slvOut;
+  end function;
+
+  function "+" (L, R: coords_t(0 to 3)) return coords_t is
+    variable slvOut : coords_t(0 to 3);
+  begin
+
+    slvOut(0) := std_logic_vector(signed(L(0)) + signed(R(0)));
+    slvOut(1) := std_logic_vector(signed(L(1)) + signed(R(1)));
+    slvOut(2) := std_logic_vector(signed(L(2)) + signed(R(2)));
+    slvOut(3) := std_logic_vector(signed(L(3)) + signed(R(3)));
+
+    return slvOut;
+  end function;
+  function isInside(pointX, pointY: coord_t; area: coords_t) return boolean is
+    variable inside : boolean := false;
+  begin
+    if(pointX >= area(0) and pointX <= area(1) and pointY >= area(2) and pointY <= area(3)) then
+      inside := true;
+    end if;
+    return inside;
+  end function;
+
+  function isInside(area1, area2: coords_t) return boolean is
+    variable inside : boolean := false;
+  begin
+    if(isInside(area1(0), area1(2), area2)
+    or isInside(area1(0), area1(3), area2)
+    or isInside(area1(1), area1(2), area2)
+    or isInside(area1(1), area1(3), area2)) then
+      inside := true;
+    end if;
+    return inside;
+  end function;
+
+ function isTouching (L, R: coords_t(0 to 3)) return boolean is
+    variable touching : boolean := false;
+  begin
+    if(isInside(L, R) or isInside(R, L)) then
+      touching := true;
+    end if;
+    return touching;
   end function;
 
 end package body pong_pack;

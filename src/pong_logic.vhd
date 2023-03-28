@@ -73,22 +73,32 @@ architecture RTL of pong_logic is
       (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
 
   signal topWallCoords   : coords_t(0 to 3) := 
-      (toSLV(0),  toSLV(hVisibleArea),  toSLV(0),  toSLV(0));
+      (toSLV(0),  toSLV(hVisibleArea),  toSLV(-1),  toSLV(-1));
 
   signal botWallCoords   : coords_t(0 to 3) := 
       (toSLV(0),  toSLV(hVisibleArea),  toSLV(vVisibleArea),  toSLV(vVisibleArea));
 
 
-  signal controllerLdirection : std_logic_vector(3 downto 0) := "0000";
-  signal controllerRdirection : std_logic_vector(3 downto 0) := "0000";
-  signal ballStatus           : std_logic_vector(3 downto 0) := "0000";
+  signal controllerLdirection : std_logic_vector(0 to 3) := "0000";
+  signal controllerRdirection : std_logic_vector(0 to 3) := "0000";
+  signal ballStatus           : std_logic_vector(0 to 3) := "0000";
 
-  signal ballDirection : std_logic_vector(3 downto 0) := "0000";
+  signal bumperLNext_s : coords_t(0 to 3);
+  signal bumperRNext_s : coords_t(0 to 3);
+  signal ballNext_s    : coords_t(0 to 3);
+
+  signal ballDirection : std_logic_vector(0 to 3) := "0000";
 
   signal bumperSpeedControl : std_logic := '0';
   signal ballSpeedControl   : std_logic := '0';
 
   signal ballStarted        : std_logic := '0';
+  signal ballFF             : coords_t(0 to 3) :=
+    (toSLV(-1), toSLV(1), toSLV(-1), toSLV(1));
+  signal bumperLFF    : coords_t(0 to 3) :=
+    (toSLV(0), toSLV(1), toSLV(0), toSLV(0));
+  signal bumperRFF    : coords_t(0 to 3) :=
+    (toSLV(-1), toSLV(0), toSLV(0), toSLV(0));
 begin
 
   reset_proc : process(clk, rst)
@@ -110,17 +120,16 @@ begin
        (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
     elsif(rising_edge(clk) and en = '1') then
       -- Left Bumper
-        bumperLCoords_s <= shiftCoords(controllerLdirection, bumperLCoords_s);
+      bumperLCoords_s <= shiftCoords(controllerLdirection, bumperLCoords_s);
       -- Right Bumper
-        bumperRCoords_s <= shiftCoords(controllerRdirection, bumperRCoords_s); 
+      bumperRCoords_s <= shiftCoords(controllerRdirection, bumperRCoords_s); 
       -- Ball
-        ballCoords_s <= shiftCoords(ballDirection, ballCoords_s);
+      ballCoords_s <= shiftCoords(ballDirection, ballCoords_s);
       -- Left Number
-        numLCoords_s <= intToPixels(scoreL_s, (toSLV(((3*hVisibleArea)/8)-20), toSLV(((3*hVisibleArea)/8)),    toSLV(20),  toSLV(61)));
+      numLCoords_s <= intToPixels(scoreL_s, (toSLV(((3*hVisibleArea)/8)-20), toSLV(((3*hVisibleArea)/8)),    toSLV(20),  toSLV(61)));
       -- Right Number
-        numRCoords_s <= intToPixels(scoreR_s, (toSLV((5*hVisibleArea)/8),      toSLV(((5*hVisibleArea)/8)+20), toSLV(20),  toSLV(61)));
+      numRCoords_s <= intToPixels(scoreR_s, (toSLV((5*hVisibleArea)/8),      toSLV(((5*hVisibleArea)/8)+20), toSLV(20),  toSLV(61)));
     end if;
-
   end process;
 
   bumper_speed_inst : entity jacobson_ip.ip_counter(RTL)
@@ -160,13 +169,16 @@ begin
       -- start the ball
       if(startIn = '1' and ballStarted = '0') then
         ballStatus(2) <= '1';
-        ballStarted <= '1';
+        ballStarted   <= '1';
       end if;
-      if(inCoords(xCoord, yCoord, ballCoords_s)    and 
-         inCoords(xCoord, yCoord, bumperLCoords_s) and 
-         inCoords(xCoord, yCoord, bumperRCoords_s) and 
-         inCoords(xCoord, yCoord, topWallCoords)   and
-         inCoords(xCoord, yCoord, botWallCoords))  then
+      --+ballFF
+      --+ballFF
+      --+ballFF
+      --+ballFF
+      if(isTouching(ballCoords_s, (bumperLCoords_s+bumperLFF)) or
+         isTouching(ballCoords_s, (bumperRCoords_s+bumperRFF)) or
+         isTouching(ballCoords_s, topWallCoords)   or
+         isTouching(ballCoords_s, botWallCoords))  then
         if(ballStatus(0) = '1' or ballStatus(1) = '1') then
           ballStatus(0) <= not ballStatus(0);
           ballStatus(1) <= not ballStatus(1);
@@ -178,7 +190,6 @@ begin
       end if;
     end if;
   end process;
-      
 
   controllerLdirection(0)   <= bumperSpeedControl when controlLIn(0) = '1' else '0';
   controllerLdirection(1)   <= bumperSpeedControl when controlLIn(1) = '1' else '0';
