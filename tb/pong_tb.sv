@@ -10,10 +10,12 @@
 module pong_tb;
 
 bit clk100, clk25;
-bit rst, en;
+bit rst_n, en;
 bit hPulse, vPulse;
 bit [3:0] red, green, blue;
 bit led;
+bit U, D, C, L, R;
+bit [0:2] SW;
 
 initial begin
   clk100 = 0;
@@ -31,18 +33,25 @@ always begin
 end
 
 task reset();
-  #5ns   rst = 1;
-  #200ns rst = 0;
+  #5ns   rst_n = 0;
+  #200ns rst_n = 1;
 endtask
 
 task run();
   #80ns en <= 1;
+  #400ns C <= 1;
 endtask
 
 pong_top pong_inst(
   .CLK100MHZ(clk100),
-  .reset(rst),
+  .reset_n(rst_n),
   .enable(en),
+  .BTNC(C),
+  .BTNU(U),
+  .BTND(D),
+  .BTNL(L),
+  .BTNR(R),
+  .SW(SW),
   .VGA_R(red),
   .VGA_G(green),
   .VGA_B(blue),

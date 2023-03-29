@@ -45,6 +45,11 @@ all:
 	make compile
 	make sim
 
+super:
+	make compile && \
+	make build && \
+	make program
+
 new:
 	mkdir -p docs tb src sim lib
 	test -f .gitignore || echo lib/* > .gitignore
