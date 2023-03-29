@@ -171,14 +171,10 @@ begin
         ballStatus(2) <= '1';
         ballStarted   <= '1';
       end if;
-      --+ballFF
-      --+ballFF
-      --+ballFF
-      --+ballFF
-      if(isTouching(ballCoords_s, (bumperLCoords_s+bumperLFF)) or
-         isTouching(ballCoords_s, (bumperRCoords_s+bumperRFF)) or
-         isTouching(ballCoords_s, topWallCoords)   or
-         isTouching(ballCoords_s, botWallCoords))  then
+      if((isTouching(ballCoords_s, topWallCoords)   and ballStatus(0) = '1')  or
+         (isTouching(ballCoords_s, botWallCoords)   and ballStatus(1) = '1')  or 
+         (isTouching(ballCoords_s, bumperLCoords_s) and ballStatus(2) = '1')  or
+         (isTouching(ballCoords_s, bumperRCoords_s) and ballStatus(3) = '1')) then
         if(ballStatus(0) = '1' or ballStatus(1) = '1') then
           ballStatus(0) <= not ballStatus(0);
           ballStatus(1) <= not ballStatus(1);

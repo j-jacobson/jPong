@@ -34,6 +34,8 @@ entity pong_top is
     BTNL          : in    std_logic;
     BTNR          : in    std_logic;
 
+    SW            : in    std_logic_vector(13 to 15);
+
     VGA_R         :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
     VGA_G         :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
     VGA_B         :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
@@ -60,12 +62,14 @@ signal numRCoords_s    : multiCoords_t(0 to 6);
 signal ballCoords_s    : coords_t(0 to 3);
 signal controlLIn      : std_logic_vector(0 to 3);
 signal controlRIn      : std_logic_vector(0 to 3);
+signal PADDLEL_SIZE    : integer;
+signal PADDLER_SIZE    : integer;
 
 begin
 
   reset      <= not reset_n;
-  controlLIn <= BTNU & BTND & BTNL & BTNR;
-  controlRIn <= (others => '0');
+  controlLIn <= BTNU & BTND & "00";
+  controlRIn <= BTNL & BTNR & "00";
 
   vga_clk_inst : entity jacobson_ip.clk_divider(RTL)
     generic map (
@@ -131,7 +135,7 @@ begin
   logic_inst : entity pong_lib.pong_logic(RTL)
     generic map(
     PADDLEL_SIZE    => NORMAL, -- XSMALL, SMALL, NORMAL, LARGE, FULL
-    PADDLER_SIZE    => FULL,   -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    PADDLER_SIZE    => NORMAL,   -- XSMALL, SMALL, NORMAL, LARGE, FULL
     hVisibleArea    => 640,
     vVisibleArea    => 480,
     BUMPER_SPEED    => 100000,

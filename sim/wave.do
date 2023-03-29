@@ -1,7 +1,8 @@
 add wave pong_tb/clk100
 add wave pong_tb/clk25
-add wave pong_tb/rst 
+add wave pong_tb/rst_n 
 add wave pong_tb/en 
+add wave pong_tb/C
 add wave pong_tb/red
 add wave pong_tb/green
 add wave pong_tb/blue

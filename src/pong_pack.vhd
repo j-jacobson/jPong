@@ -40,11 +40,15 @@ package pong_pack is
   function shiftCoords(direction: std_logic_vector(0 to 3); coords : coords_t(0 to 3)) return coords_t;
   -- function to turn an integer into a picture of pixels
   function intToPixels(int: integer; bounds: coords_t(0 to 3)) return multiCoords_t;
-  -- Overload + operator to increment and decrement the coords.
+  -- Overload + operator to increment the coords.
   function "+" (L: coords_t(0 to 3); R: std_logic_vector(0 to 3)) return coords_t;
   function "+" (L, R: coords_t(0 to 3)) return coords_t;
   -- Return true if two objects are touching.
   function isTouching (L, R: coords_t(0 to 3)) return boolean;
+  -- Overload - operator to decrement the coords.
+  function "-" (L: coords_t(0 to 3); R: std_logic_vector(0 to 3)) return coords_t;
+  -- Overload - operator to decrement the coords.
+  function "-" (L, R: coords_t(0 to 3)) return coords_t;
 end package;
 
 package body pong_pack is
@@ -155,6 +159,19 @@ package body pong_pack is
     return slvOut;
   end function;
 
+  function "-" (L: coords_t(0 to 3); R: std_logic_vector(0 to 3)) return coords_t is
+    variable Rtemp  : coords_t(0 to 3);
+    variable slvOut : coords_t(0 to 3);
+  begin
+    Rtemp(0) := (others => R(0));
+    Rtemp(1) := (others => R(1));
+    Rtemp(2) := (others => R(2));
+    Rtemp(3) := (others => R(3));
+
+    slvOut := L - Rtemp;
+    return slvOut;
+  end function;
+
   function "+" (L, R: coords_t(0 to 3)) return coords_t is
     variable slvOut : coords_t(0 to 3);
   begin
@@ -166,6 +183,19 @@ package body pong_pack is
 
     return slvOut;
   end function;
+
+  function "-" (L, R: coords_t(0 to 3)) return coords_t is
+    variable slvOut : coords_t(0 to 3);
+  begin
+
+    slvOut(0) := std_logic_vector(signed(L(0)) - signed(R(0)));
+    slvOut(1) := std_logic_vector(signed(L(1)) - signed(R(1)));
+    slvOut(2) := std_logic_vector(signed(L(2)) - signed(R(2)));
+    slvOut(3) := std_logic_vector(signed(L(3)) - signed(R(3)));
+
+    return slvOut;
+  end function;
+
   function isInside(pointX, pointY: coord_t; area: coords_t) return boolean is
     variable inside : boolean := false;
   begin
