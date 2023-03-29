@@ -78,6 +78,11 @@ architecture RTL of pong_logic is
   signal botWallCoords   : coords_t(0 to 3) := 
       (toSLV(0),  toSLV(hVisibleArea),  toSLV(vVisibleArea),  toSLV(vVisibleArea));
 
+  signal rightWallCoords   : coords_t(0 to 3) := 
+      (toSLV(hVisibleArea-10),  toSLV(hVisibleArea),  toSLV(0),  toSLV(vVisibleArea));
+
+  signal leftWallCoords   : coords_t(0 to 3) := 
+      (toSLV(0),  toSLV(1),   toSLV(0),  toSLV(vVisibleArea));
 
   signal controllerLdirection : std_logic_vector(0 to 3) := "0000";
   signal controllerRdirection : std_logic_vector(0 to 3) := "0000";
@@ -101,13 +106,11 @@ architecture RTL of pong_logic is
     (toSLV(-1), toSLV(0), toSLV(0), toSLV(0));
 begin
 
-  reset_proc : process(clk, rst)
+  nonball_proc : process(clk, rst)
   begin
     if(rst = '1') then
-      scoreL_s <= 0;
-      scoreR_s <= 0;
       bumperLCoords_s <=
-       (toSLV(10),  toSLV(20),  toSLV((vVisibleArea/2) - (PADDLEL_SIZE/2)),  toSLV((vVisibleArea/2) + (PADDLEL_SIZE/2)));
+       (toSLV(11),  toSLV(21),  toSLV((vVisibleArea/2) - (PADDLEL_SIZE/2)),  toSLV((vVisibleArea/2) + (PADDLEL_SIZE/2)));
       bumperRCoords_s <=
        (toSLV(hVisibleArea-30), toSLV(hVisibleArea-20), toSLV((vVisibleArea/2) - (PADDLER_SIZE/2)),  toSLV((vVisibleArea/2) + (PADDLER_SIZE/2)));
       midlineCoords_s <=
@@ -116,15 +119,11 @@ begin
        intToPixels(0, (toSLV(((3*hVisibleArea)/8)-20), toSLV(((3*hVisibleArea)/8)),    toSLV(20),  toSLV(61)));
       numRCoords_s    <=
        intToPixels(0, (toSLV((5*hVisibleArea)/8),      toSLV(((5*hVisibleArea)/8)+20), toSLV(20),  toSLV(61)));
-      ballCoords_s   <=
-       (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
     elsif(rising_edge(clk) and en = '1') then
       -- Left Bumper
       bumperLCoords_s <= shiftCoords(controllerLdirection, bumperLCoords_s);
       -- Right Bumper
-      bumperRCoords_s <= shiftCoords(controllerRdirection, bumperRCoords_s); 
-      -- Ball
-      ballCoords_s <= shiftCoords(ballDirection, ballCoords_s);
+      bumperRCoords_s <= shiftCoords(controllerRdirection, bumperRCoords_s);
       -- Left Number
       numLCoords_s <= intToPixels(scoreL_s, (toSLV(((3*hVisibleArea)/8)-20), toSLV(((3*hVisibleArea)/8)),    toSLV(20),  toSLV(61)));
       -- Right Number
@@ -162,10 +161,13 @@ begin
 
   ball_bounce_proc : process(clk, rst)
   begin
-    if(rst = '1') then 
-      ballStarted <= '0';
-    end if;
-    if(rising_edge(clk)) then
+    if(rst = '1') then
+      scoreL_s     <= 0;
+      scoreR_s     <= 0;
+      ballStarted  <= '0';
+      ballStatus   <= "0000";
+      ballCoords_s <= (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
+    elsif(rising_edge(clk)) then
       -- start the ball
       if(startIn = '1' and ballStarted = '0') then
         ballStatus(2) <= '1';
@@ -183,6 +185,20 @@ begin
           ballStatus(2) <= not ballStatus(2);
           ballStatus(3) <= not ballStatus(3);
         end if;
+      end if;
+      if(isTouching(ballCoords_s, leftWallCoords)) then
+        ballCoords_s <= (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
+        ballStarted  <= '0';
+        ballStatus   <= "0000";
+        scoreR_s     <= scoreR_s + 1;
+      elsif(isTouching(ballCoords_s, rightWallCoords)) then
+        ballCoords_s <= (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
+        ballStarted  <= '0';
+        ballStatus   <= "0000";
+        scoreL_s     <= scoreL_s + 1;
+      else
+        -- Ball Coordinates
+        ballCoords_s <= shiftCoords(ballDirection, ballCoords_s);
       end if;
     end if;
   end process;

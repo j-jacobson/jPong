@@ -81,7 +81,7 @@ package body pong_pack is
     if(direction(0) = '1' and coords(2) > 0) then -- up
       shifted(2) := coords(2) - toSLV(1);
       shifted(3) := coords(3) - toSLV(1);
-    elsif(direction(1) = '1' and coords(3) < v_Size) then -- down
+    elsif(direction(1) = '1' and coords(3) < v_Size-1) then -- down
       shifted(2) := coords(2) + toSLV(1);
       shifted(3) := coords(3) + toSLV(1);
     end if;
@@ -89,7 +89,7 @@ package body pong_pack is
     if(direction(2) = '1' and coords(0) > 0) then -- left
       shifted(0) := coords(0) - toSLV(1);
       shifted(1) := coords(1) - toSLV(1);
-    elsif(direction(3) = '1' and coords(1) < h_Size) then -- right
+    elsif(direction(3) = '1' and coords(1) < h_Size-1) then -- right
       shifted(0) := coords(0) + toSLV(1);
       shifted(1) := coords(1) + toSLV(1);
     end if;
@@ -110,7 +110,7 @@ package body pong_pack is
     variable segmentOff : coords_t(0 to 3) := (toSLV(h_Size+1), toSLV(h_Size+1),    toSLV(v_Size+1), toSLV(v_Size+1));
   begin
     if(int = 0) then
-      pixelsOut(6) := (toSLV(h_Size+1), toSLV(h_Size+1),    toSLV(v_Size+1), toSLV(v_Size+1));
+      pixelsOut(6) := segmentOff;
     elsif(int = 1) then
       pixelsOut(0) := segmentOff;
       pixelsOut(3) := segmentOff;
@@ -137,10 +137,17 @@ package body pong_pack is
       pixelsOut(4) := segmentOff;
       pixelsOut(5) := segmentOff;
       pixelsOut(6) := segmentOff;
-    -- 8 is the default, we don't need a case
+    elsif(int = 8) then
     elsif(int = 9) then
       pixelsOut(3) := segmentOff;
       pixelsOut(4) := segmentOff;
+    else
+      pixelsOut(0) := segmentOff;
+      pixelsOut(1) := segmentOff;
+      pixelsOut(2) := segmentOff;
+      pixelsOut(3) := segmentOff;
+      pixelsOut(4) := segmentOff;
+      pixelsOut(5) := segmentOff;
     end if;
 
     return pixelsOut;
