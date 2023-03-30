@@ -89,13 +89,14 @@ architecture RTL of pong_logic is
 
   signal ballDirection : std_logic_vector(0 to 3) := "0000";
 
-  signal bumperSpeedControl : std_logic := '0';
-  signal ballVSpeedControl  : std_logic := '0';
-  signal ballHSpeedControl  : std_logic := '0';
+  signal bumperSpeedControl : std_logic :=  '0';
+  signal ballVSpeedControl  : std_logic :=  '0';
+  signal ballHSpeedControl  : std_logic :=  '0';
   signal ballHSpeed         : integer :=  60000;
   signal ballVSpeed         : integer := 100000;
-
-  signal ballStarted        : std_logic := '0';
+  signal ballHSpeedPercent  : integer :=     50;
+  signal ballVSpeedPercent  : integer :=     50;
+  signal ballStarted        : std_logic :=  '0';
 
 begin
 
@@ -179,8 +180,7 @@ begin
       if(startIn = '1' and ballStarted = '0') then
         ballStatus(2) <= '1';
         ballStarted   <= '1';
-      end if;
-      if((isTouching(ballCoords_s, topWallCoords)) and ballStatus(0) = '1') then
+      elsif((isTouching(ballCoords_s, topWallCoords)) and ballStatus(0) = '1') then
         ballStatus(0) <= '0';
         ballStatus(1) <= '1';
       elsif((isTouching(ballCoords_s, botWallCoords)) and ballStatus(1) = '1') then
@@ -219,6 +219,49 @@ begin
       else
         -- Ball Coordinates
         ballCoords_s <= shiftCoords(ballDirection, ballCoords_s);
+      end if;
+      if((ballVSpeed < 30) and not (controlLIn(0 to 1) = "00")) then -- if the ball is going slow
+        ballStatus(0 to 1) <= controlLIn(0 to 1); -- let the controller dictate the new direction
+      elsif((ballVSpeed < 30) and not (controlRIn(0 to 1) = "00")) then
+        ballStatus(0 to 1) <= controlLIn(0 to 1);
+      end if;
+    end if;
+  end process;
+
+  ballSpeedUpdate_proc : process(clk, rst)
+  begin
+    if(rst = '1') then
+      ballVSpeed <= 50; -- eventually convert this 0-100 value into normal values
+      ballHSpeed <= 50;
+    elsif(rising_edge(clk)) then
+      if(isTouching(ballCoords_s, bumperLCoords_s)) then -- when the ball hits the bumper
+        if(controlLIn(0 to 1) = ballStatus(0 to 1)) then -- and the controller and ball are both headed upwards, or both downwards
+          ballVSpeed <= ballVSpeed + 3; -- 3 percent increase if paddle is moving with the ball;
+          ballHSpeed <= ballHSpeed + 2;
+        elsif(not controlLIn(0 to 1) = "00") then -- if bumper isn't moving
+          ballVSpeed <= ballVSpeed - 1; -- 1 percent decrease if paddle isn't moving 
+        else
+          ballVSpeed <= ballVSpeed - 3; -- 3 percent decrease if paddle is moving opposite the ball;
+        end if;
+      elsif(isTouching(ballCoords_s, bumperRCoords_s)) then -- when the ball hits the bumper
+        if(controlRIn(0 to 1) = ballStatus(0 to 1)) then -- and the controller and ball are both headed upwards, or both downwards
+          ballVSpeed <= ballVSpeed + 3; -- 3 percent increase if paddle is moving with the ball;
+        elsif(not controlRIn(0 to 1) = "00") then -- if bumper isn't moving
+          ballVSpeed <= ballVSpeed - 1; -- 1 percent decrease if paddle isn't moving 
+        else
+          ballVSpeed <= ballVSpeed - 3; -- 3 percent decrease if paddle is moving opposite the ball;
+        end if;
+      elsif(isTouching(ballCoords_s, botWallCoords) or
+         isTouching(ballCoords_s, topWallCoords)) then -- when the ball hits the bumper
+          ballVSpeed <= ballVSpeed - 1; -- 1 percent decrease if ball hits the wall
+      elsif(isTouching(ballCoords_s, rightWallCoords) or
+         isTouching(ballCoords_s, leftWallCoords)) then
+        ballVSpeed <= 50; -- reset ball speed when we hit the wall
+        ballHSpeed <= 50;
+      end if;
+      if(ballVSpeed < 29) then
+        ballVSpeed <= 45;
+        ballHSpeed <= 45;
       end if;
     end if;
   end process;
