@@ -24,8 +24,7 @@ entity pong_logic is
     vVisibleArea  : integer := 480;
     PADDLEL_SIZE  : integer := NORMAL; -- XSMALL, SMALL, NORMAL, LARGE, FULL
     PADDLER_SIZE  : integer := NORMAL; -- XSMALL, SMALL, NORMAL, LARGE, FULL
-    BUMPER_SPEED  : integer := 20;
-    BALL_SPEED    : integer := 30
+    BUMPER_SPEED  : integer := 20
   );
   port (
     clk           : in    std_logic;
@@ -73,41 +72,38 @@ architecture RTL of pong_logic is
       (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
 
   signal topWallCoords   : coords_t(0 to 3) := 
-      (toSLV(0),  toSLV(hVisibleArea),  toSLV(-1),  toSLV(-1));
+      (toSLV(0),  toSLV(hVisibleArea),  toSLV(0),  toSLV(0));
 
   signal botWallCoords   : coords_t(0 to 3) := 
-      (toSLV(0),  toSLV(hVisibleArea),  toSLV(vVisibleArea),  toSLV(vVisibleArea));
+      (toSLV(0),  toSLV(hVisibleArea),  toSLV(vVisibleArea-1),  toSLV(vVisibleArea-1));
 
+  signal rightWallCoords   : coords_t(0 to 3) := 
+      (toSLV(hVisibleArea-10),  toSLV(hVisibleArea),  toSLV(0),  toSLV(vVisibleArea));
+
+  signal leftWallCoords   : coords_t(0 to 3) := 
+      (toSLV(0),  toSLV(1),   toSLV(0),  toSLV(vVisibleArea));
 
   signal controllerLdirection : std_logic_vector(0 to 3) := "0000";
   signal controllerRdirection : std_logic_vector(0 to 3) := "0000";
   signal ballStatus           : std_logic_vector(0 to 3) := "0000";
 
-  signal bumperLNext_s : coords_t(0 to 3);
-  signal bumperRNext_s : coords_t(0 to 3);
-  signal ballNext_s    : coords_t(0 to 3);
-
   signal ballDirection : std_logic_vector(0 to 3) := "0000";
 
   signal bumperSpeedControl : std_logic := '0';
-  signal ballSpeedControl   : std_logic := '0';
+  signal ballVSpeedControl  : std_logic := '0';
+  signal ballHSpeedControl  : std_logic := '0';
+  signal ballHSpeed         : integer :=  60000;
+  signal ballVSpeed         : integer := 100000;
 
   signal ballStarted        : std_logic := '0';
-  signal ballFF             : coords_t(0 to 3) :=
-    (toSLV(-1), toSLV(1), toSLV(-1), toSLV(1));
-  signal bumperLFF    : coords_t(0 to 3) :=
-    (toSLV(0), toSLV(1), toSLV(0), toSLV(0));
-  signal bumperRFF    : coords_t(0 to 3) :=
-    (toSLV(-1), toSLV(0), toSLV(0), toSLV(0));
+
 begin
 
-  reset_proc : process(clk, rst)
+  nonball_proc : process(clk, rst)
   begin
     if(rst = '1') then
-      scoreL_s <= 0;
-      scoreR_s <= 0;
       bumperLCoords_s <=
-       (toSLV(10),  toSLV(20),  toSLV((vVisibleArea/2) - (PADDLEL_SIZE/2)),  toSLV((vVisibleArea/2) + (PADDLEL_SIZE/2)));
+       (toSLV(11),  toSLV(21),  toSLV((vVisibleArea/2) - (PADDLEL_SIZE/2)),  toSLV((vVisibleArea/2) + (PADDLEL_SIZE/2)));
       bumperRCoords_s <=
        (toSLV(hVisibleArea-30), toSLV(hVisibleArea-20), toSLV((vVisibleArea/2) - (PADDLER_SIZE/2)),  toSLV((vVisibleArea/2) + (PADDLER_SIZE/2)));
       midlineCoords_s <=
@@ -116,15 +112,11 @@ begin
        intToPixels(0, (toSLV(((3*hVisibleArea)/8)-20), toSLV(((3*hVisibleArea)/8)),    toSLV(20),  toSLV(61)));
       numRCoords_s    <=
        intToPixels(0, (toSLV((5*hVisibleArea)/8),      toSLV(((5*hVisibleArea)/8)+20), toSLV(20),  toSLV(61)));
-      ballCoords_s   <=
-       (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
     elsif(rising_edge(clk) and en = '1') then
       -- Left Bumper
       bumperLCoords_s <= shiftCoords(controllerLdirection, bumperLCoords_s);
       -- Right Bumper
-      bumperRCoords_s <= shiftCoords(controllerRdirection, bumperRCoords_s); 
-      -- Ball
-      ballCoords_s <= shiftCoords(ballDirection, ballCoords_s);
+      bumperRCoords_s <= shiftCoords(controllerRdirection, bumperRCoords_s);
       -- Left Number
       numLCoords_s <= intToPixels(scoreL_s, (toSLV(((3*hVisibleArea)/8)-20), toSLV(((3*hVisibleArea)/8)),    toSLV(20),  toSLV(61)));
       -- Right Number
@@ -134,55 +126,99 @@ begin
 
   bumper_speed_inst : entity jacobson_ip.ip_counter(RTL)
   generic map (
-    START_VAL  => 0,
-    STOP_VAL   => BUMPER_SPEED,
     LOOP_IN    => '1'
   )
   port map (
     clk      => clk,
     rst      => rst,
     enableIn => en,
+    startVal => 0,
+    stopVal  => BUMPER_SPEED,
     countOut => open,
     doneOut  => bumperSpeedControl
   );
 
   ball_Hspeed_inst : entity jacobson_ip.ip_counter(RTL)
   generic map (
-    START_VAL  => 0,
-    STOP_VAL   => BALL_SPEED,
     LOOP_IN    => '1'
   )
   port map (
     clk      => clk,
     rst      => rst,
     enableIn => en,
+    startVal => 0,
+    stopVal  => ballHSpeed,
     countOut => open,
-    doneOut  => ballSpeedControl
+    doneOut  => ballHSpeedControl
+  );
+
+  ball_Vspeed_inst : entity jacobson_ip.ip_counter(RTL)
+  generic map (
+    LOOP_IN    => '1'
+  )
+  port map (
+    clk      => clk,
+    rst      => rst,
+    enableIn => en,
+    startVal => 0,
+    stopVal  => ballVSpeed,
+    countOut => open,
+    doneOut  => ballVSpeedControl
   );
 
   ball_bounce_proc : process(clk, rst)
   begin
-    if(rst = '1') then 
-      ballStarted <= '0';
-    end if;
-    if(rising_edge(clk)) then
+    if(rst = '1') then
+      scoreL_s     <= 0;
+      scoreR_s     <= 0;
+      ballStarted  <= '0';
+      ballStatus   <= "0000";
+      ballCoords_s <= (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
+    elsif(rising_edge(clk)) then
       -- start the ball
       if(startIn = '1' and ballStarted = '0') then
         ballStatus(2) <= '1';
         ballStarted   <= '1';
       end if;
-      if((isTouching(ballCoords_s, topWallCoords)   and ballStatus(0) = '1')  or
-         (isTouching(ballCoords_s, botWallCoords)   and ballStatus(1) = '1')  or 
-         (isTouching(ballCoords_s, bumperLCoords_s) and ballStatus(2) = '1')  or
-         (isTouching(ballCoords_s, bumperRCoords_s) and ballStatus(3) = '1')) then
-        if(ballStatus(0) = '1' or ballStatus(1) = '1') then
-          ballStatus(0) <= not ballStatus(0);
-          ballStatus(1) <= not ballStatus(1);
+      if((isTouching(ballCoords_s, topWallCoords)) and ballStatus(0) = '1') then
+        ballStatus(0) <= '0';
+        ballStatus(1) <= '1';
+      elsif((isTouching(ballCoords_s, botWallCoords)) and ballStatus(1) = '1') then
+        ballStatus(0) <= '1';
+        ballStatus(1) <= '0';
+      elsif(isTouching(ballCoords_s, bumperLCoords_s) and ballStatus(2) = '1') then
+        if((ballStatus(0) = '0' and ballStatus(1) = '0') and controlLIn(0) = '1') then
+          ballStatus(0) <= '1';
+          ballStatus(1) <= '0';
+        elsif((ballStatus(0) = '0' and ballStatus(1) = '0') and controlLIn(1) = '1') then
+          ballStatus(0) <= '1';
+          ballStatus(1) <= '0';
         end if;
-        if(ballStatus(2) = '1' or ballStatus(3) = '1') then
-          ballStatus(2) <= not ballStatus(2);
-          ballStatus(3) <= not ballStatus(3);
+        ballStatus(2) <= '0';
+        ballStatus(3) <= '1';
+      elsif(isTouching(ballCoords_s, bumperRCoords_s) and ballStatus(3) = '1') then
+        if((ballStatus(0) = '0' and ballStatus(1) = '0') and controlRIn(0) = '1') then
+          ballStatus(0) <= '1';
+          ballStatus(1) <= '0';
+        elsif((ballStatus(0) = '0' and ballStatus(1) = '0') and controlRIn(1) = '1') then
+          ballStatus(0) <= '1';
+          ballStatus(1) <= '0';
         end if;
+        ballStatus(2) <= '1';
+        ballStatus(3) <= '0';
+      elsif(isTouching(ballCoords_s, leftWallCoords)) then
+        ballCoords_s <= (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
+        ballStarted  <= '0';
+        ballStatus   <= "0000";
+        scoreR_s     <= scoreR_s + 1;
+      elsif(isTouching(ballCoords_s, rightWallCoords)) then
+        ballCoords_s <= (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
+        ballStarted  <= '0';
+        ballStatus   <= "0000";
+        scoreL_s     <= scoreL_s + 1;
+      else
+        -- Ball Coordinates
+        ballCoords_s <= shiftCoords(ballDirection, ballCoords_s);
       end if;
     end if;
   end process;
@@ -191,10 +227,10 @@ begin
   controllerLdirection(1)   <= bumperSpeedControl when controlLIn(1) = '1' else '0';
   controllerRdirection(0)   <= bumperSpeedControl when controlRIn(0) = '1' else '0';
   controllerRdirection(1)   <= bumperSpeedControl when controlRIn(1) = '1' else '0';
-  ballDirection(0) <= ballSpeedControl when ballStatus(0) = '1' else '0';
-  ballDirection(1) <= ballSpeedControl when ballStatus(1) = '1' else '0';
-  ballDirection(2) <= ballSpeedControl when ballStatus(2) = '1' else '0';
-  ballDirection(3) <= ballSpeedControl when ballStatus(3) = '1' else '0';
+  ballDirection(0) <= ballVSpeedControl when ballStatus(0) = '1' else '0';
+  ballDirection(1) <= ballVSpeedControl when ballStatus(1) = '1' else '0';
+  ballDirection(2) <= ballHSpeedControl when ballStatus(2) = '1' else '0';
+  ballDirection(3) <= ballHSpeedControl when ballStatus(3) = '1' else '0';
 
   bumperLCoords <= bumperLCoords_s;
   bumperRCoords <= bumperRCoords_s;

@@ -135,11 +135,10 @@ begin
   logic_inst : entity pong_lib.pong_logic(RTL)
     generic map(
     PADDLEL_SIZE    => NORMAL, -- XSMALL, SMALL, NORMAL, LARGE, FULL
-    PADDLER_SIZE    => NORMAL,   -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    PADDLER_SIZE    => FULL,   -- XSMALL, SMALL, NORMAL, LARGE, FULL
     hVisibleArea    => 640,
     vVisibleArea    => 480,
-    BUMPER_SPEED    => 100000,
-    BALL_SPEED      =>  90000
+    BUMPER_SPEED    => 100000
     )
     port map(
       clk           => clk25MHz,
