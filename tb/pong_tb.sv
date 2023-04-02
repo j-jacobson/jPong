@@ -16,6 +16,7 @@ bit [3:0] red, green, blue;
 bit led;
 bit U, D, C, L, R;
 bit [0:2] SW;
+bit PWM, SD;
 
 initial begin
   clk100 = 0;
@@ -57,6 +58,8 @@ pong_top pong_inst(
   .VGA_B(blue),
   .VGA_HS(hPulse),
   .VGA_VS(vPulse),
+  .AUD_PWM(PWM),
+  .AUD_SD(SD),
   .LED(led)
 );
 

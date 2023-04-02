@@ -34,6 +34,9 @@ entity pong_top is
     BTNL          : in    std_logic;
     BTNR          : in    std_logic;
 
+    JA            : in    std_logic_vector(1 to 2);
+    JB            : in    std_logic_vector(1 to 3);
+
     SW            : in    std_logic_vector(13 to 15);
 
     VGA_R         :   out std_logic_vector(((VGA_DEPTH/3)-1) downto 0);
@@ -43,6 +46,8 @@ entity pong_top is
     VGA_HS        :   out std_logic;
     VGA_VS        :   out std_logic;
 
+    AUD_PWM       :   out std_logic;
+    AUD_SD        :   out std_logic;
     LED           :   out std_logic_vector((NUM_LEDS-1) downto 0)
   );
 end;
@@ -51,25 +56,35 @@ architecture RTL of pong_top is
 
 signal clk25MHz        : std_logic;
 signal reset           : std_logic;
+
+-- VGA
 signal inVisibleArea   : std_logic;
 signal xCoord          : coord_t;
 signal yCoord          : coord_t;
+
+-- Game Logic
 signal bumperLCoords_s : coords_t(0 to 3);
 signal bumperRCoords_s : coords_t(0 to 3);
 signal midlineCoords_s : coords_t(0 to 3);
 signal numLCoords_s    : multiCoords_t(0 to 6);
 signal numRCoords_s    : multiCoords_t(0 to 6);
 signal ballCoords_s    : coords_t(0 to 3);
+
+-- Sound Logic
+signal play            : std_logic;
+
+-- Inputs
 signal controlLIn      : std_logic_vector(0 to 3);
 signal controlRIn      : std_logic_vector(0 to 3);
-signal PADDLEL_SIZE    : integer;
-signal PADDLER_SIZE    : integer;
+
+signal startButton     : std_logic;
 
 begin
 
-  reset      <= not reset_n;
-  controlLIn <= BTNU & BTND & "00";
-  controlRIn <= BTNL & BTNR & "00";
+  reset       <= not reset_n;
+  controlLIn  <= (not JB(1)) & (not JB(2)) & "00";
+  controlRIn  <= (not JA(1)) & (not JA(2)) & "00";
+  startButton <= not JB(3);
 
   vga_clk_inst : entity jacobson_ip.clk_divider(RTL)
     generic map (
@@ -134,8 +149,8 @@ begin
 
   logic_inst : entity pong_lib.pong_logic(RTL)
     generic map(
-    PADDLEL_SIZE    => NORMAL, -- XSMALL, SMALL, NORMAL, LARGE, FULL
-    PADDLER_SIZE    => FULL,   -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    PADDLEL_SIZE    => SMALL, -- XSMALL, SMALL, NORMAL, LARGE, FULL
+    PADDLER_SIZE    => NORMAL,   -- XSMALL, SMALL, NORMAL, LARGE, FULL
     hVisibleArea    => 640,
     vVisibleArea    => 480,
     BUMPER_SPEED    => 100000
@@ -145,7 +160,7 @@ begin
       rst           => reset,
       en            => '1',
 
-      startIn       => BTNC,
+      startIn       => startButton,
       controlLIn    => controlLIn,
       controlRIn    => controlRIn,
 
@@ -160,7 +175,20 @@ begin
       ballCoords     => ballCoords_s,
 
       scoreL        => open,
-      scoreR        => open
+      scoreR        => open,
+
+      beepOut       => play
+    );
+
+  sound_inst : entity jacobson_ip.sound_driver(RTL)
+    port map (
+      clk      => clk25MHz,
+      rst      => reset,
+      playIn   => play,
+
+      --noteIn   : in    note_t; -- TODO: Add this functionality.
+      soundOut => AUD_PWM,
+      soundEn  => AUD_SD
     );
 
   test_led_inst : entity jacobson_ip.clk_divider(RTL)

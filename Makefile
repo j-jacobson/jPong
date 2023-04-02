@@ -32,6 +32,7 @@ compile:
 	make compile_tb
 
 sim: FORCE
+	make compile
 	vsim $(LIB_NAME).$(TB_NAME) -do "do sim/wave.do; run 10000us" && \
 	mv transcript vsim.wlf sim/
 

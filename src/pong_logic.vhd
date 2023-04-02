@@ -46,7 +46,9 @@ entity pong_logic is
     ballCoords    :   out coords_t(0 to 3);
 
     scoreL        :   out integer;
-    scoreR        :   out integer
+    scoreR        :   out integer;
+
+    beepOut       :   out std_logic
   );
 end entity pong_logic;
 architecture RTL of pong_logic is
@@ -97,6 +99,7 @@ architecture RTL of pong_logic is
 
   signal ballStarted        : std_logic := '0';
 
+  signal beep_s             : std_logic := '0';
 begin
 
   nonball_proc : process(clk, rst)
@@ -171,6 +174,7 @@ begin
     if(rst = '1') then
       scoreL_s     <= 0;
       scoreR_s     <= 0;
+      beep_s       <= '0';
       ballStarted  <= '0';
       ballStatus   <= "0000";
       ballCoords_s <= (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
@@ -183,9 +187,11 @@ begin
       if((isTouching(ballCoords_s, topWallCoords)) and ballStatus(0) = '1') then
         ballStatus(0) <= '0';
         ballStatus(1) <= '1';
+        beep_s        <= '1';
       elsif((isTouching(ballCoords_s, botWallCoords)) and ballStatus(1) = '1') then
         ballStatus(0) <= '1';
         ballStatus(1) <= '0';
+        beep_s        <= '1';
       elsif(isTouching(ballCoords_s, bumperLCoords_s) and ballStatus(2) = '1') then
         if((ballStatus(0) = '0' and ballStatus(1) = '0') and controlLIn(0) = '1') then
           ballStatus(0) <= '1';
@@ -196,6 +202,7 @@ begin
         end if;
         ballStatus(2) <= '0';
         ballStatus(3) <= '1';
+        beep_s        <= '1';
       elsif(isTouching(ballCoords_s, bumperRCoords_s) and ballStatus(3) = '1') then
         if((ballStatus(0) = '0' and ballStatus(1) = '0') and controlRIn(0) = '1') then
           ballStatus(0) <= '1';
@@ -206,6 +213,7 @@ begin
         end if;
         ballStatus(2) <= '1';
         ballStatus(3) <= '0';
+        beep_s        <= '1';
       elsif(isTouching(ballCoords_s, leftWallCoords)) then
         ballCoords_s <= (toSLV((3*hVisibleArea)/8),  toSLV(((3*hVisibleArea)/8)+10),  toSLV((vVisibleArea/2) - 5),  toSLV((vVisibleArea/2) + 5));
         ballStarted  <= '0';
@@ -219,6 +227,7 @@ begin
       else
         -- Ball Coordinates
         ballCoords_s <= shiftCoords(ballDirection, ballCoords_s);
+        beep_s        <= '0';
       end if;
     end if;
   end process;
@@ -240,5 +249,6 @@ begin
   ballCoords    <= ballCoords_s;
   scoreL        <= scoreL_s;
   scoreR        <= scoreR_s;
+  beepOut       <= beep_s;
 
 end architecture RTL;
