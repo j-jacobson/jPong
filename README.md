@@ -1,7 +1,7 @@
-# Pong
-Pong on the Nexys A7
+# Digital Ping Pong
+Digital Ping Pong on the Nexys A7
 
-This is to be a full and complete Pong clone written by myself.
+This is to be a full and complete game of Digital Ping Pong written by myself.
 
 Currently, the game is playable with 2 players. Two paddles are created and a ball. The start button is pushed by the player the ball is in front of and the ball is launched towards their paddle. The ball bounces off of the paddles and upper and lower walls until it hits the left or right wall behind a players paddle. Then the score increments and the ball is reset. When the ball bounces, it makes a beeping noise. The paddles are configurable to be different sizes: Normal, Large, Full (for single player play), small, and extra small.
 
