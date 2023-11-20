@@ -40,4 +40,7 @@ Outputs a 2Hz LED pulse, so that you can tell the board was correctly programmed
 ## Limitations
 There is currently no AI available for single player play. There is currently no variation in ball speed based on bounces. These are planned to be added in the future. The score currently only increments to 9 and then goes into a '-' state. That is planned to be changed in the future.
 
+## IP
+My personal IP is currently private. It should be obvious what pieces are needed based on the instantiations. If you are really struggling getting this to work, reach out and I can share some of the other code.
+
 Thanks!
